@@ -100,14 +100,29 @@ De toolkit is een vrijwel complete en direct inzetbare verzameling materialen wa
 Het vormt een sterke basis voor opschaling en verdere professionalisering van digitale toegankelijkheid binnen onderwijsinstellingen.
 
 # Downloads
+## Downloads
 
-<ul>
-{% for item in site._posts %}
-  <li>
-    {{ item.path | relative_url }}
-      {{ item.title }}
-    </a>
-  </li>
-{% endfor %}
+<ul id="toolkit-files">
+  <li>Loading...</li>
 </ul>
 
+<script>
+  fetch('https://api.github.com/repos/Veron-AccNL/skills-github-pages/contents/toolkit')
+    .then(r => r.json())
+    .then(files => {
+      const list = document.getElementById('toolkit-files');
+      list.innerHTML = '';
+      files.forEach(file => {
+        if (file.type === 'file') {
+          list.innerHTML += `
+            <li>
+              <a href="${file.download_url}" download>${file.name}</a>
+              <small>(${(file.size / 1024).toFixed(1)} KB)</small>
+            </li>`;
+        }
+      });
+    })
+    .catch(() => {
+      document.getElementById('toolkit-files').innerHTML = '<li>Could not load files.</li>';
+    });
+</script>
