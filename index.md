@@ -109,7 +109,7 @@ Het vormt een sterke basis voor opschaling en verdere professionalisering van di
 <script>
   const REPO = 'Veron-AccNL/skills-github-pages';
 
-  fetch(`https://api.github.com/repos/${REPO}/git/trees/main?recursive=1`)
+  fetch(`https://api.github.com/repos/${REPO}/git/trees/main/?recursive=1`)
     .then(r => r.json())
     .then(async data => {
 
