@@ -102,27 +102,66 @@ Het vormt een sterke basis voor opschaling en verdere professionalisering van di
 # Downloads
 ## Downloads
 
-<ul id="toolkit-files">
-  <li>Loading...</li>
-</ul>
+## Toolkit
+
+<div id="toolkit"></div>
 
 <script>
-  fetch('https://api.github.com/repos/Veron-AccNL/skills-github-pages/contents/toolkit')
+  const REPO = 'Veron-AccNL/skills-github-pages';
+
+  fetch(`https://api.github.com/repos/${REPO}/git/trees/main?recursive=1`)
     .then(r => r.json())
-    .then(files => {
-      const list = document.getElementById('toolkit-files');
-      list.innerHTML = '';
-      files.forEach(file => {
-        if (file.type === 'file') {
-          list.innerHTML += `
-            <li>
-              <a href="${file.download_url}" download>${file.name}</a>
-              <small>(${(file.size / 1024).toFixed(1)} KB)</small>
-            </li>`;
+    .then(async data => {
+
+      // 1. Filter to files inside /toolkit and group by immediate subfolder
+      const folders = {};
+      data.tree
+        .filter(item => item.type === 'blob' && item.path.startsWith(toolkit + '/'))
+        .forEach(item => {
+          const parts = item.path.slice(toolkit.length + 1).split('/');
+          if (parts.length < 2) return; // skip root-level files
+          const folder = parts[0];
+          const filename = parts[1];
+          if (!folders[folder]) folders[folder] = { text: null, files: [] };
+          if (filename === 'text.md') {
+            folders[folder].text = item.path;
+          } else {
+            folders[folder].files.push({ name: filename, path: item.path });
+          }
+        });
+
+      // 2. Render each folder
+      const container = document.getElementById('toolkit');
+
+      for (const [folder, contents] of Object.entries(folders)) {
+        const section = document.createElement('div');
+
+        // Heading
+        section.innerHTML = `<h3>${folder}</h3>`;
+
+        // Fetch and render text.md if it exists
+        if (contents.text) {
+          const rawUrl = `https://raw.githubusercontent.com/${REPO}/main/${contents.text}`;
+          const md = await fetch(rawUrl).then(r => r.text());
+          const p = document.createElement('p');
+          p.textContent = md;
+          section.appendChild(p);
         }
-      });
+
+        // File list (excluding text.md)
+        if (contents.files.length > 0) {
+          const ul = document.createElement('ul');
+          contents.files.forEach(file => {
+            const rawUrl = `https://raw.githubusercontent.com/${REPO}/main/${file.path}`;
+            ul.innerHTML += `<li><a href="${rawUrl}" download>${file.name}</a></li>`;
+          });
+          section.appendChild(ul);
+        }
+
+        container.appendChild(section);
+      }
     })
     .catch(() => {
-      document.getElementById('toolkit-files').innerHTML = '<li>Could not load files.</li>';
+      document.getElementById('toolkit').innerHTML = '<p>Could not load toolkit.</p>';
     });
 </script>
