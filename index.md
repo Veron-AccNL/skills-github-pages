@@ -99,11 +99,6 @@ De toolkit is een vrijwel complete en direct inzetbare verzameling materialen wa
 
 Het vormt een sterke basis voor opschaling en verdere professionalisering van digitale toegankelijkheid binnen onderwijsinstellingen.
 
-
----
-title: Toolkit downloads
----
-
 # Downloads
 
 <ul>
