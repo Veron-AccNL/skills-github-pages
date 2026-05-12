@@ -161,6 +161,7 @@ Het vormt een sterke basis voor opschaling en verdere professionalisering van di
       }
     })
     .catch(() => {
-      document.getElementById('toolkit').innerHTML = '<p>Could not load toolkit.</p>';
+      document.getElementById('toolkit').innerHTML = 
+      `<pre>Fetch failed: ${err.message}</pre>`;
     });
 </script>
