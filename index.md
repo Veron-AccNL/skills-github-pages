@@ -105,22 +105,28 @@ Het vormt een sterke basis voor opschaling en verdere professionalisering van di
 
 <div id="toolkit"></div>
 
-<script>
-  const REPO = 'Veron-AccNL/skills-github-pages';
+## Toolkit
 
-  fetch(`https://api.github.com/repos/${REPO}/git/trees/main/?recursive=1`)
+<div id="toolkit"><em>Loading...</em></div>
+
+<script>
+  const REPO   = 'Veron-AccNL/skills-github-pages';
+  const BRANCH = 'main';
+  const ROOT   = 'toolkit';
+
+  fetch(`https://api.github.com/repos/${REPO}/git/trees/${BRANCH}?recursive=1`)
     .then(r => r.json())
     .then(async data => {
+      if (!data.tree) throw new Error(JSON.stringify(data));
 
-      // 1. Filter to files inside /toolkit and group by immediate subfolder
+      // Group files by subfolder
       const folders = {};
       data.tree
-        .filter(item => item.type === 'blob' && item.path.startsWith(toolkit + '/'))
+        .filter(item => item.type === 'blob' && item.path.startsWith(ROOT + '/'))
         .forEach(item => {
-          const parts = item.path.slice(toolkit.length + 1).split('/');
-          if (parts.length < 2) return; // skip root-level files
-          const folder = parts[0];
-          const filename = parts[1];
+          const parts = item.path.slice(ROOT.length + 1).split('/');
+          if (parts.length !== 2) return;           // skip root-level or deeply nested
+          const [folder, filename] = parts;
           if (!folders[folder]) folders[folder] = { text: null, files: [] };
           if (filename === 'text.md') {
             folders[folder].text = item.path;
@@ -129,39 +135,48 @@ Het vormt een sterke basis voor opschaling en verdere professionalisering van di
           }
         });
 
-      // 2. Render each folder
       const container = document.getElementById('toolkit');
+      container.innerHTML = '';
 
       for (const [folder, contents] of Object.entries(folders)) {
         const section = document.createElement('div');
-
-        // Heading
         section.innerHTML = `<h3>${folder}</h3>`;
 
-        // Fetch and render text.md if it exists
+        // Fetch text.md — fail gracefully per folder
         if (contents.text) {
-          const rawUrl = `https://raw.githubusercontent.com/${REPO}/main/${contents.text}`;
-          const md = await fetch(rawUrl).then(r => r.text());
-          const p = document.createElement('p');
-          p.textContent = md;
-          section.appendChild(p);
+          try {
+            const rawUrl = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${contents.text}`;
+            const mdText = await fetch(rawUrl).then(r => {
+              if (!r.ok) throw new Error(`HTTP ${r.status}`);
+              return r.text();
+            });
+            const p = document.createElement('p');
+            p.textContent = mdText;
+            section.appendChild(p);
+          } catch (e) {
+            console.warn(`Could not load text.md for ${folder}:`, e);
+          }
         }
 
-        // File list (excluding text.md)
+        // Download list
         if (contents.files.length > 0) {
           const ul = document.createElement('ul');
           contents.files.forEach(file => {
-            const rawUrl = `https://raw.githubusercontent.com/${REPO}/main/${file.path}`;
-            ul.innerHTML += `<li><a href="${rawUrl}" download>${file.name}</a></li>`;
+            const rawUrl = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${file.path}`;
+            ul.innerHTML += `<li><a href="${rawUrl}" download="${file.name}">${file.name}</a></li>`;
           });
           section.appendChild(ul);
         }
 
         container.appendChild(section);
       }
+
+      if (container.children.length === 0) {
+        container.innerHTML = '<em>No toolkit folders found.</em>';
+      }
     })
-    .catch(() => {
-      document.getElementById('toolkit').innerHTML = 
-      `<pre>Fetch failed: ${err.message}</pre>`;
+    .catch(err => {
+      document.getElementById('toolkit').innerHTML =
+        `<strong>Error:</strong> <code>${err.message}</code>`;
     });
 </script>
