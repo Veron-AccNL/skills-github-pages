@@ -1,1 +1,4 @@
 theme: minima
+collections:
+  skills-github-pages:
+    output: true
