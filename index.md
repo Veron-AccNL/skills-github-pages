@@ -104,7 +104,7 @@ Het vormt een sterke basis voor opschaling en verdere professionalisering van di
 ## Toolkit
 De toolkit 
 
-<div id="toolkit"></div>
+<div id="toolkit-dynamic"></div>
 <script>
   const REPO   = 'Veron-AccNL/skills-github-pages';
   const BRANCH = 'main';
@@ -131,7 +131,7 @@ De toolkit
           }
         });
 
-      const container = document.getElementById('toolkit');
+      const container = document.getElementById('toolkit-dynamic');
       container.innerHTML = '';
 
       for (const [folder, contents] of Object.entries(folders)) {
